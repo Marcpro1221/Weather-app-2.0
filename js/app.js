@@ -1,117 +1,61 @@
-const cities = [
-  "New York",
-  "London",
-  "Tokyo",
-  "Paris",
-  "Sydney",
-  "Los Angeles",
-  "Toronto",
-  "Dubai",
-  "Singapore",
-  "Hong Kong",
-  "Rome",
-  "Berlin",
-  "Seoul",
-  "Bangkok",
-  "Moscow",
-  "São Paulo",
-  "Mexico City",
-  "Istanbul",
-  "Cape Town",
-  "Mumbai",
-  "Jakarta",
-  "Manila",
-  "Cairo",
-  "Barcelona",
-  "San Francisco",
-  "Chicago",
-  "Beijing",
-  "Amsterdam",
-  "Kuala Lumpur",
-  "Lagos",
-  // Added 50 more:
-  "Hanoi",
-  "Brussels",
-  "Vienna",
-  "Oslo",
-  "Helsinki",
-  "Copenhagen",
-  "Stockholm",
-  "Lisbon",
-  "Athens",
-  "Prague",
-  "Warsaw",
-  "Budapest",
-  "Dublin",
-  "Reykjavik",
-  "Tehran",
-  "Riyadh",
-  "Doha",
-  "Jerusalem",
-  "Baghdad",
-  "Baku",
-  "Tbilisi",
-  "Nairobi",
-  "Accra",
-  "Algiers",
-  "Addis Ababa",
-  "Casablanca",
-  "Caracas",
-  "Buenos Aires",
-  "Lima",
-  "Bogotá",
-  "Quito",
-  "Santiago",
-  "Panama City",
-  "Havana",
-  "Kingston",
-  "Port-au-Prince",
-  "San Juan",
-  "Anchorage",
-  "Honolulu",
-  "Vancouver",
-  "Montreal",
-  "Quebec City",
-  "Tijuana",
-  "Guadalajara",
-  "Medellín",
-  "Montevideo",
-  "Asunción",
-  "La Paz",
-  "Suva",
-  "Wellington"
-];
 
 
 let weatherLocationField = document.getElementById("cityInput");
 let weatherPanel = document.getElementsByClassName("weather-section")[0];
 let cityListUnorderedList = document.getElementsByClassName("list-cities")[0]; //ul element container of list
 
+
   weatherLocationField.addEventListener("input", function () {
-    let input = weatherLocationField.value.toLowerCase();
-    let suggestions = cities.filter(city => city.toLowerCase().startsWith(input));
-    cityListUnorderedList.innerHTML = ""; // update to clear previous suggestions inside UL element
-        if(suggestions.length && input.length > 0){
-            console.log(suggestions);
-            weatherPanel.style.display = "block";
-                suggestions.slice(0, 5).forEach(city => {
+    weatherPanel.style.display = "none";
+    cityListUnorderedList.innerHTML = "";
+    locationSuggestions(weatherLocationField.value);
+  });
+
+// async function fetchWeatherLocation(city){
+//     fetch(`http://localhost:3000/weather?city=${city}`)
+//     .then(response => response.json())
+//     .then(data => console.log(data))
+//     .catch(error => console.error("Error fetching weather data:", error));
+// }
+async function locationSuggestions(city){
+    try{
+        const response = await fetch(`http://localhost:3000/suggestions?city=${city}`);
+        const data = await response.json();
+        const cityNames = data.map(location => {
+            let locationName = [location.name];
+            if(location.state){
+                locationName.push(location.state);
+            }
+            if(location.country){
+                locationName.push(location.country);
+            }
+            console.log(locationName);
+            return locationName.join(", ");
+        }); // RETURN ARRAY
+        const suggestions = cityNames.filter(cities => cities.toLowerCase().startsWith(city.toLowerCase())).slice(0, 7);
+            cityListUnorderedList.innerHTML = "";
+            if(city.length === 0){
+                weatherPanel.style.display = "none";
+                return;
+            }
+            if(suggestions.length && city.length > 0){
+                weatherPanel.style.display = "block";
+                suggestions.forEach(cities => {
                     let listElement = document.createElement("li");
                     listElement.classList.add("list-group-item");
-                    listElement.textContent = city;
+                    listElement.textContent = cities;
                     cityListUnorderedList.appendChild(listElement);
                 })
-            weatherPanel.style.height = "auto"; // Adjust height to fit content    
-        }else if(input.length > 0 && suggestions.length === 0){
-            weatherPanel.style.display = "block";
-            let listElement = document.createElement("li");
-            listElement.classList.add("list-group-item");
-            listElement.textContent = "No location found";
-            cityListUnorderedList.appendChild(listElement);
-            weatherPanel.style.height = "auto";
-        }
-        else{
-            weatherPanel.style.display = "none";
-            console.log(cityListUnorderedList.innerHTML = "");
-        }
-    
-  });
+                weatherPanel.style.height = "auto";
+            }else if(city.length > 0 && suggestions.length === 0){
+                weatherPanel.style.display = "block";
+                let listElement = document.createElement("li");
+                listElement.classList.add("list-item");
+                listElement.textContent = "No location found";
+                cityListUnorderedList.appendChild(listElement);
+                weatherPanel.style.height = "auto";
+            }
+    }catch (error) {
+        console.error("Error fetching location suggestions:", error);
+    }
+}

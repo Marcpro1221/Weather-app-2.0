@@ -58,3 +58,12 @@ main{
     list-style: none;
     padding: 10px;
 }
+.list-group-item:hover{
+    background-color: #f0f4ff;
+    color: #2a4f9c;
+    cursor: pointer;
+}
+.list-item{ 
+    list-style: none;
+    padding: 10px;
+}
